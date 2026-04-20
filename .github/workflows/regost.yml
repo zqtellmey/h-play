@@ -1,7 +1,7 @@
 name: Auto Re Gost Pure
 on:
-#  schedule:
-#    - cron: '0 */3 * * *' 
+  schedule:
+    - cron: '0 */3 * * *' 
   workflow_dispatch: 
 
 jobs:
@@ -33,9 +33,7 @@ jobs:
 
       - name: Setup Gost Proxy
         run: |
-          # 👇👇👇 以后换代理，只改这一行引号里的内容即可，不需要做任何 Base64 转换 👇👇👇
-          #  SOCKS5_URL="socks5://"
-         
+          # 👇👇👇 正在启动gost代理 👇👇👇                
           wget -q https://github.com/ginuerzh/gost/releases/download/v2.11.5/gost-linux-amd64-2.11.5.gz
           gunzip -f gost-linux-amd64-2.11.5.gz
           chmod +x gost-linux-amd64-2.11.5
