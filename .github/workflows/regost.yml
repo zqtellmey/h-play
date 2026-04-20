@@ -1,0 +1,58 @@
+name: Auto Re Gost Pure
+on:
+#  schedule:
+#    - cron: '0 */3 * * *' 
+  workflow_dispatch: 
+
+jobs:
+  run-renew:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' 
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb ffmpeg unzip wget curl
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install DrissionPage xvfbwrapper requests SpeechRecognition pydub
+
+      - name: Setup Gost Proxy
+        run: |
+          # 👇👇👇 以后换代理，只改这一行引号里的内容即可，不需要做任何 Base64 转换 👇👇👇
+          #  SOCKS5_URL="socks5://"
+         
+          wget -q https://github.com/ginuerzh/gost/releases/download/v2.11.5/gost-linux-amd64-2.11.5.gz
+          gunzip -f gost-linux-amd64-2.11.5.gz
+          chmod +x gost-linux-amd64-2.11.5
+          
+          echo "🔗 启动 Gost 隧道: $SOCKS5_URL"
+          ./gost-linux-amd64-2.11.5 -L=http://:1080 -F="$SOCKS5_URL" > gost.log 2>&1 &
+          
+          sleep 5
+          echo "--- 🌐 连通性测试 ---"
+          curl -I -x http://127.0.0.1:1080 https://www.google.com
+
+      - name: Run Renew Script
+        env:
+          RENEW_URL: ${{ secrets.RENEW_URL }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          SOCKS5_URL: ${{ secrets.SOCKS5_URL }}
+          PROXY: 127.0.0.1:1080
+        run: |
+          xvfb-run --server-args="-screen 0 1920x1080x24" python main2.py
