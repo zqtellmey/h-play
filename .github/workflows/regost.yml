@@ -54,3 +54,15 @@ jobs:
           PROXY: 127.0.0.1:1080
         run: |
           xvfb-run --server-args="-screen 0 1920x1080x24" python main2.py
+
+      - name: Upload Debug Artifacts
+        uses: actions/upload-artifact@v4
+        if: always() 
+        with:
+          name: debug-data
+          # 收集截图、HTML 源码以及音频缓存文件用于排查
+          path: |
+            ./*.html
+            ./*.png
+            ./*.wav
+          retention-days: 1
